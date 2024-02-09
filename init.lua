@@ -1,2 +1,2 @@
-require("core")
-require("plugins.lazy")
+require "plugins"
+require "habit.options"
