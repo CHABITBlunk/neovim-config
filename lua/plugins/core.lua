@@ -1,7 +1,7 @@
 return {
   { "nvim-lua/plenary.nvim", lazy = true },
   { "echasnovski/mini.bufremove", lazy = true },
-  { "rebelot/kanagawa.nvim", priority = 1000, },
+  { "rebelot/kanagawa.nvim", config = function() vim.cmd.colorscheme [[kanagawa-dragon]] end, priority = 1000, },
   { "max397574/better-escape.nvim", event = "InsertCharPre", opts = { timeout = 300 } },
   {
     "s1n7ax/nvim-window-picker",
