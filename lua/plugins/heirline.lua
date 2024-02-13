@@ -53,10 +53,11 @@ return {
               filetype = {
                 "NvimTree",
                 "OverseerList",
+                "aerial",
                 "dap%-repl",
                 "dapui_.",
                 "edgy",
-                "heo%-tree",
+                "neo%-tree",
                 "undotree",
               },
             }, vim.api.nvim_win_get_buf(self.winid))
@@ -75,10 +76,6 @@ return {
           { -- close button for current tab
             provider = status.provider.close_button { kind = "TabClose", padding = { left = 1, right = 1 } },
             hl = status.hl.get_attributes("tab_close", true),
-            on_click = {
-              callback = function() require("habit.utils.buffer").close_tab() end,
-              name = "heirline_tabline_close_tab_callback",
-            },
           },
         },
       },

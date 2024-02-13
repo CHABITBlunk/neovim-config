@@ -61,11 +61,6 @@ function M.tabline_file_info(opts)
     close_button = {
       hl = function(self) return hl.get_attributes(self.tab_type .. "_close") end,
       padding = { left = 1, right = 1 },
-      on_click = {
-        callback = function(_, minwid) buffer_utils.close(minwid) end,
-        minwid = function(self) return self.bufnr end,
-        name = "heirline_tabline_close_buffer_callback",
-      },
     },
     padding = { left = 1, right = 1 },
     hl = function(self)
@@ -174,14 +169,6 @@ function M.git_branch(opts)
     git_branch = { icon = { kind = "GitBranch", padding = { right = 1 } } },
     surround = { separator = "left", color = "git_branch_bg", condition = condition.is_git_repo },
     hl = hl.get_attributes "git_branch",
-    on_click = {
-      name = "heirline_branch",
-      callback = function()
-        if is_available "telescope.nvim" then
-          vim.defer_fn(function() require("telescope.builtin").git_branches {use_file_path = true } end, 100)
-        end
-      end,
-    },
     update = { "User", pattern = "GitSignsUpdate" },
     init = init.update_events { "BufEnter" },
   }, opts)
@@ -197,14 +184,6 @@ function M.git_diff(opts)
     changed = { icon = { kind = "GitChange", padding = { left = 1, right = 1 } } },
     removed = { icon = { kind = "GitDelete", padding = { left = 1, right = 1 } } },
     hl = hl.get_attributes "git_diff",
-    on_click = {
-      name = "heirline_git",
-      callback = function()
-        if is_available "telescope.nvim" then
-          vim.defer_fn(function() require("telescope.builtin").git_status { use_file_path = true } end, 100)
-        end
-      end,
-    },
     surround = { separator = "left" , color = "git_diff_bg", condition = condition.git_changed },
     update = { "User", pattern = "GitSignsUpdate" },
     init = init.update_events { "BufEnter" },
@@ -231,14 +210,6 @@ function M.diagnostics(opts)
     HINT = { icon = { kind = "DiagnosticHint", padding = { left = 1, right = 1 } } },
     surround = { separator = " left", color = "diagnostics_bg", condition = condition.has_diagnostics },
     hl = hl.get_attributes "diagnostics",
-    on_click = {
-      name = "heirline_diagnostic",
-      callback = function()
-        if is_available "telescope.nvim" then
-          vim.defer_fn(function() require("telescope.builtin").diagnostics() end, 100)
-        end
-      end,
-    },
     update = { "DiagnosticChanged", "BufEnter" },
   }, opts)
   return M.builder(status_utils.setup_providers(opts, { "ERROR", "WARN", "INFO", "HINT" }, function(p_opts, p)
@@ -296,12 +267,6 @@ function M.lsp(opts)
     },
     hl = hl.get_attributes "lsp",
     surround = { separator = "right", color = "lsp_bg", condition = condition.lsp_attached },
-    on_click = {
-      name = "heirline_lsp",
-      callback = function()
-        vim.defer_fn(function() vim.cmd.LspInfo() end, 100)
-      end,
-    },
   }, opts)
   return M.builder(status_utils.setup_providers(
     opts,
@@ -325,18 +290,6 @@ function M.foldcolumn(opts)
   opts = extend_tbl({
     foldcolumn = { padding = { right = 1 } },
     condition = condition.foldcolumn_enabled,
-    on_click = {
-      name = "fold_click",
-      callback = function(...)
-        local char = status_utils.statuscolumn_clickargs(...).char
-        local fillchars = vim.opt_local.fillchars:get()
-        if char == (fillchars.foldopen or get_icon "FoldOpened") then
-          vim.cmd "norm! zc"
-        elseif char == (fillchars.foldclose or get_icon "FoldClosed") then
-          vim.cmd "norm! zo"
-        end
-      end,
-    },
   }, opts)
   return M.builder(status_utils.setup_providers(opts, { "foldcolumn" }))
 end
@@ -348,16 +301,6 @@ function M.numbercolumn(opts)
   opts = extend_tbl({
     numbercolumn = { padding = { right = 1 } },
     condition = condition.numbercolumn_enabled,
-    on_click = {
-      name = "line_click",
-      callback = function(...)
-        local args = status_utils.statuscolumn_clickargs(...)
-        if args.mods:find "c" then
-          local dap_avail, dap = pcall(require, "dap")
-          if dap_avail then vim.schedule(dap.toggle_breakpoint) end
-        end
-      end,
-    }
   }, opts)
   return M.builder(status_utils.setup_providers(opts, { "numbercolumn" }))
 end
@@ -369,15 +312,6 @@ function M.signcolumn(opts)
   opts = extend_tbl({
     signcolumn = {},
     condition = condition.signcolumn_enabled,
-    on_click = {
-      name = "sign_click",
-      callback = function(...)
-        local args = status_utils.statuscolumn_clickargs(...)
-        if args.sign and args.sign.name and env.sign_handlers[args.sign.name] then
-          env.sign_handlers[args.sign.name](args)
-        end
-      end,
-    },
   }, opts)
   return M.builder(status_utils.setup_providers(opts, { "signcolumn" }))
 end

@@ -22,7 +22,6 @@ function M.build_provider(opts, provider, _)
         provider = provider,
         opts = opts,
         condition = opts.condition,
-        on_click = opts.on_click,
         update = opts.update,
         hl = opts.hl,
       }
@@ -161,36 +160,6 @@ end
 function M.null_ls_sources(filetype, method)
   local methods_avail, methods = pcall(require, "null-ls.methods")
   return methods_avail and M.null_ls_providers(filetype)[methods.internal[method]] or {}
-end
-
---- A helper function for decoding statuscolumn click events with mouse click pressed, modifier keys, as well as which signcolumn sign was clicked if any
----@param self any the self parameter from Heirline component on_click.callback function call
----@param minwid any the minwid parameter from Heirline component on_click.callback function call
----@param clicks any the clicks parameter from Heirline component on_click.callback function call
----@param button any the button parameter from Heirline component on_click.callback function call
----@param mods any the button parameter from Heirline component on_click.callback function call
----@return table # the argument table with the decoded mouse information and signcolumn signs information
-function M.statuscolumn_clickargs(self, minwid, clicks, button, mods)
-  local args = {
-    minwid = minwid,
-    clicks = clicks,
-    button = button,
-    mods = mods,
-    mousepos = vim.fn.getmousepos(),
-  }
-  if not self.signs then self.signs = {} end
-  args.char = vim.fn.screenstring(args.mousepos.screenrow, args.mousepos.screencol)
-  if args.char == " " then args.char = vim.fn.screenstring(args.mousepos.screenrow, args.mousepos.screencol - 1) end
-  args.sign = self.signs[args.char]
-  if not args.sign then -- update signs if not found on first click
-    for _, sign_def in ipairs(vim.fn.sign_getdefined()) do
-      if sign_def.text then self.signs[sign_def.text:gsub("%s", "")] = sign_def end
-    end
-    args.sign = self.signs[args.char]
-  end
-  vim.api.nvim_set_current_win(args.mousepos.winid)
-  vim.api.nvim_win_set_cursor(0, { args.mousepos.line, 0 })
-  return args
 end
 
 return M

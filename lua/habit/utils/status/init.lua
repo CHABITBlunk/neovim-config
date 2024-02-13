@@ -43,14 +43,6 @@ function M.breadcrumbs(opts)
       if i > start_idx then
         local child = {
           { provider = string.gsub(d.name, "%%", "%%%%"):gsub("%s*->%s*", "") }, -- add symbol name
-          on_click = { -- add on click function
-            minwid = status_utils.encode_pos(d.lnum, d.col, self.winnr),
-            callback = function(_, minwid)
-              local lnum, col, winnr = status_utils.decode_pos(minwid)
-              vim.api.nvim_win_set_cursor(vim.fn.win_getid(winnr), { lnum, col })
-            end,
-            name = "heirline_breadcrumbs",
-          },
         }
         if opts.icon_enabled then
           local hl = opts.icon.hl
@@ -75,3 +67,8 @@ function M.breadcrumbs(opts)
     self[1] = self:new(children, 1)
   end
 end
+
+--- an `init` function to build a set of children components for a separated path to file
+---@param opts? table opts for configuring the breadcrumbs (default: `{ max_depth = 3, path_func = provider.unique_path(), separator = "  ", suffix = true, padding = { left = 0, right = 0 } }`)
+---@return function # the heirline init function
+---@usage local heirline_component = { init = require("habit.utils.status").init.separated_path { padding = { left = 1 } } }
