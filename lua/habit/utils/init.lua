@@ -107,6 +107,13 @@ function M.is_available(plugin)
   return lazy_config_avail and lazy_config.spec.plugins[plugin] ~= nil
 end
 
+--- serve notification
+---@param msg string the notification body
+---@param type? number the type of notification (:help vim.log.levels)
+function M.notify(msg, type)
+  vim.schedule(function() vim.notify(msg, type) end)
+end
+
 --- open a url under cursor with current os
 ---@param path string the path of the file to open with system opener
 function M.system_open(path)
