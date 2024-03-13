@@ -2,6 +2,7 @@ if vim.loader and vim.fn.has "nvim-0.9" == 1 then vim.loader.enable() end
 
 for _, source in ipairs {
   -- "habit.autocmds",
+  "habit.bootstrap",
   "habit.lazy",
   "habit.mappings",
   "habit.options",

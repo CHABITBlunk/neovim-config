@@ -5,6 +5,7 @@
 local M = {}
 local tbl_contains = vim.tbl_contains
 local tbl_isempty = vim.tbl_isempty
+local user_opts = habit.user_opts
 
 local utils = require "habit.utils"
 local conditional_func = utils.conditional_func
@@ -12,14 +13,14 @@ local is_available = utils.is_available
 local extend_tbl = utils.extend_tbl
 
 local server_config = "lsp.config."
-local setup_handlers = {
+local setup_handlers = user_opts("lsp.setup_handlers", {
   function(server, opts) require("lspconfig")[server].setup(opts) end,
-}
+})
 
 M.diagnostics = { [0] = {}, {}, {}, {} }
 
 M.setup_diagnostics = function(signs)
-  local default_diagnostics = {
+  local default_diagnostics = habit.user_opts("diagnostics", {
     virtual_text = true,
     signs = {
       text = {
@@ -41,7 +42,7 @@ M.setup_diagnostics = function(signs)
       header = "",
       prefix = "",
     },
-  }
+  })
   M.diagnostics = {
     -- diagnostics off
     [0] = extend_tbl(
@@ -59,7 +60,7 @@ M.setup_diagnostics = function(signs)
   vim.diagnostic.config(M.diagnostics[vim.g.diagnostics_mode])
 end
 
-M.formatting = { format_on_save = { enabled = true }, disabled = {} }
+M.formatting = user_opts("lsp.formatting", { format_on_save = { enabled = true }, disabled = {} })
 if type(M.formatting.format_on_save) == "boolean" then
   M.formatting.format_on_save = { enabled = M.formatting.format_on_save }
 end
@@ -80,7 +81,7 @@ M.setup = function(server)
   -- if server doesn't exist, set it up from user server definition
   local config_avail, config = pcall(require, "lspconfig.server_configurations." .. server)
   if not config_avail or not config.default_config then
-    local server_definition = server_config .. server
+    local server_definition = user_opts(server_config .. server)
     if server_definition.cmd then require("lspconfig.configs")[server] = { default_config = server_definition } end
   end
   local opts = M.config(server)
@@ -268,7 +269,135 @@ M.on_attach = function(client, bufnr)
       if vim.b.inlay_hints_enabled then vim.lsp.inlay_hint.enable(bufnr, true) end
     end
   end
+
+  if client.supports_method "textDocument/references" then
+    lsp_mappings.n["gr"] = {
+      function() vim.lsp.buf.references() end,
+      desc = "References of current symbol",
+    }
+    lsp_mappings.n["<leader>lR"] = {
+      function() vim.lsp.buf.references() end,
+      desc = "Search references",
+    }
+  end
+
+  if client.supports_method "textDocument/rename" then
+    lsp_mappings.n["<leader>lr"] = {
+      function() vim.lsp.buf.rename() end,
+      desc = "Rename current symbol",
+    }
+  end
+
+  if client.supports_method "textDocument/signatureHelp" then
+    lsp_mappings.n["<leader>lh"] = {
+      function() vim.lsp.buf.signature_help() end,
+      desc = "Signature help"
+    }
+  end
+  
+  if client.supports_method "textDocument/typeDefiniton" then
+    lsp_mappings.n["gy"] = {
+      function() vim.lsp.buf.type_definition() end,
+      desc = "Definition of current type",
+    }
+  end
+
+  if client.supports_method "workspace/symbol" then
+    lsp_mappings.n["<leader>lG"] = { function() vim.lsp.buf.workspace_symbol() end, desc = "Search workspace symbols" }
+  end
+
+  if client.supports_method "textDocument/semanticTokens/full" and vim.lsp.semantic_tokens then
+    vim.b[bufnr].semantic_tokens_enabled = true
+  end
+
+  if is_available "telescope.nvim" then -- setup telescope mappings if possible
+    if lsp_mappings.n.gd then lsp_mappings.n.gd[1] = function() require("telescope.builtin").lsp_definitions() end end
+    if lsp_mappings.n.gI then
+      lsp_mappings.n.gI[1] = function() require("telescope.builtin").lsp_implementations() end
+    end
+    if lsp_mappings.n.gr then lsp_mappings.n.gr[1] = function() require("telescope.builtin").lsp_references() end end
+    if lsp_mappings.n["<leader>lR"] then
+      lsp_mappings.n["<leader>lR"][1] = function() require("telescope.builtin").lsp_references() end
+    end
+    if lsp_mappings.n.gy then
+      lsp_mappings.n.gy[1] = function() require("telescope.builtin").lsp_type_definitions() end
+    end
+    if lsp_mappings.n["<leader>lG"] then
+      lsp_mappings.n["<leader>lG"][1] = function()
+        vim.ui.input({ prompt = "Symbol Query: (leave empty for word under cursor)" }, function(query)
+          if query then
+            -- word under cursor if given query is empty
+            if query == "" then query = vim.fn.expand "<cword>" end
+            require("telescope.builtin").lsp_workspace_symbols {
+              query = query,
+              prompt_title = ("Find word (%s)"):format(query),
+            }
+          end
+        end)
+      end
+    end
+  end
+
+  if not vim.tbl_isempty(lsp_mappings.v) then
+    lsp_mappings.v["<leader>l"] = { desc = utils.get_icon("ActiveLSP", 1, true) .. "LSP" }
+  end
+  utils.set_mappings(lsp_mappings, { buffer = bufnr })
+
+  local on_attach_override = user_opts("lsp.on_attach", nil, false)
+  conditional_func(on_attach_override, true, client, bufnr)
+end
+
+-- default lsp capabilities
+M.capabilities = vim.lsp.protocol.make_client_capabilities()
+M.capabilities.textDocument.completion.completionItem.documentationFormat = { "markdown", "plaintext" }
+M.capabilities.textDocument.completion.completionItem.snippetSupport = true
+M.capabilities.textDocument.completion.completionItem.preselectSupport = true
+M.capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
+M.capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+M.capabilities.textDocument.completion.completionItem.deprecatedSupport = true
+M.capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+M.capabilities.textDocument.completion.completionItem.tagSupport = { valueSet = { 1 } }
+M.capabilities.textDocument.completion.completionItem.resolveSupport =
+  { properties = { "documentation", "detail", "additionalTextEdits" } }
+M.capabilities.textDocument.foldingRange = { dynamicRegistration = false, lineFoldingOnly = true }
+M.capabilities = user_opts("lsp.capabilities", M.capabilities)
+M.flags = user_opts "lsp.flags"
+
+--- get server config for given language server to be provided in server's `setup` call
+---@param server_name string the name of ther server
+---@return table opts the table of lsp opts used when setting up given language server
+function M.config(server_name)
+  local server = require("lspconfig")[server_name]
+  local lsp_opts = extend_tbl(server, { capabilities = M.capabilities, flags = M.flags })
+  if server_name == "jsonls" then -- by default add json schemas
+    local schemastore_avail, schemastore = pcall(require, "schemastore")
+    if schemastore_avail then
+      lsp_opts.settings = { json = { schemas = schemastore.json.schemas(), validate = { enable = true } } }
+    end
+  end
+  if server_name == "lua_ls" then -- by default initialize neodev & disable 3rd party checking
+    pcall(require, "neodev")
+    lsp_opts.before_init = function(param, config)
+      if vim.b.neodev_enabled then
+        for _, habit_config in ipairs(habit.supported_configs) do
+          if param.rootPath:match(habit_config) then
+            table.insert(config.settings.Lua.workspace.library, habit.install.home .. "/lua")
+            break
+          end
+        end
+      end
+    end
+    lsp_opts.settings = { Lua = { workspace = { checkThirdParty = false } } }
+  end
+  local opts = user_opts(server_config .. server_name, lsp_opts)
+  local old_on_attach = server.on_attach
+  local user_on_attach = opts.on_attach
+  opts.on_attach = function(client, bufnr)
+    conditional_func(old_on_attach, true, client, bufnr)
+    M.on_attach(client, bufnr)
+    conditional_func(user_on_attach, true, client, bufnr)
+  end
+  return opts
 end
 
 return M
-
