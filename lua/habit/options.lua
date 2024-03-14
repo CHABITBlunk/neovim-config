@@ -1,6 +1,9 @@
 vim.opt.viewoptions:remove "curdir" -- disable saving current directory with views
 vim.opt.shortmess:append { s = true, I = true } -- disable search count wrap & startup messages
 vim.opt.backspace:append { "nostop" } -- don't stop backspace at insert
+if vim.fn.has "nvim-0.9" then
+  vim.opt.diffopt:append "linematch:60" -- enable linematch diff algorithm
+end
 
 local options = {
   o = {
@@ -42,6 +45,18 @@ local options = {
   },
   g = {
     mapleader = " ", -- set leader key
+    -- my specific global options
+    max_file = { size = 1024 * 100, lines = 10000 }, -- set global limits for large files
+    autoformat_enabled = true, -- enable auto formatting at start (lsp.formatting.format_on_save must be enabled)
+    autopairs_enabled = true, -- enable autopairs at start
+    cmp_enabled = true, -- enable completion at start
+    codelens_enabled = true, -- enable automatic codelens refreshing for lsp that support it
+    diagnostics_mode = 3, -- set visibility of diagnostics in ui (0=off, 1=only show in status line, 2=virtual text off, 3=all on)
+    highlighturl_enabled = true,
+    inlay_hints_enabled = false, -- enable lsp inlay hints on startup (v0.10 only)
+    lsp_handlers_enabled = true, -- enable default vim.lsp.handlers (hover & signature help)
+    semantic_tokens_enabled = true, -- enable lsp semantic tokens on startup
+    git_worktrees = nil,
   },
   t = vim.t.bufs and vim.t.bufs or { bufs = vim.api.nvim_list_bufs() }, -- initialize buffers for current tab
 }
