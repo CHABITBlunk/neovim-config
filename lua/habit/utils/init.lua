@@ -30,7 +30,7 @@ end
 ---@param event string the event name to be appended to habit
 ---@param delay? boolean whether or not to delay event asynchronously (default is true)
 function M.event(event, delay)
-  local emit_event = function() vim.api.nvim_exec_autocmds("User", { pattern = "Habit" .. event, modeline = false }) end
+  local emit_event = function() vim.api.nvim_exec_autocmds("User", { pattern = event, modeline = false }) end
   if delay == false then
     emit_event()
   else
