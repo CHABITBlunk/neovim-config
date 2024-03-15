@@ -49,7 +49,7 @@ function M.make_buflist(component)
           init = function (self)
             if not (self.label and self._picker_labels[self.label]) then
               local bufname = provider.filename()(self)
-              local label = bufnmae:sub(1, 1)
+              local label = bufname:sub(1, 1)
               local i = 2
               while label ~= " " and self._picker_labels[label] do
                 if i > #bufname then break end

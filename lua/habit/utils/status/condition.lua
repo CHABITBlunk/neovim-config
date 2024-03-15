@@ -1,4 +1,4 @@
---- status conditions
+-- status conditions
 --
 -- statusline related condition functions to use with heirline
 --
@@ -8,11 +8,11 @@ local M = {}
 
 local env = require "habit.utils.status.env"
 
---- A condition function if the window is currently active
+-- a condition function if the window is currently active
 ---@return boolean # whether or not the window is currently actie
 function M.is_active() return vim.api.nvim_get_current_win() == tonumber(vim.g.actual_curwin) end
 
---- A condition function if the buffer filetype,buftype,bufname match a pattern
+-- a condition function if the buffer filetype,buftype,bufname match a pattern
 ---@param patterns table the table of patterns to match
 ---@param bufnr number of the buffer to match (Default: 0 [current])
 ---@return boolean # whether or not LSP is attached
@@ -23,19 +23,19 @@ function M.buffer_matches(patterns, bufnr)
   return false
 end
 
---- A condition function if a macro is being recorded
+-- a condition function if a macro is being recorded
 ---@return boolean # whether or not a macro is currently being recorded
 function M.is_macro_recording() return vim.fn.reg_recording() ~= "" end
 
---- A condition function if search is visible
+-- a condition function if search is visible
 ---@return boolean # whether or not searching is currently visible
 function M.is_hlsearch() return vim.v.hlsearch ~= 0 end
 
---- A condition function if showcmdloc is set to statusline
+-- a condition function if showcmdloc is set to statusline
 ---@return boolean # whether or not statusline showcmd is enabled
 function M.is_statusline_showcmd() return vim.fn.has "nvim-0.9" == 1 and vim.opt.showcmdloc:get() == "statusline" end
 
---- A condition function if the current file is in a git repo
+-- a condition function if the current file is in a git repo
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not the current file is in a git repo
 function M.is_git_repo(bufnr)
@@ -43,7 +43,7 @@ function M.is_git_repo(bufnr)
   return vim.b[bufnr or 0].gitsigns_head or vim.b[bufnr or 0].gitsigns_status_dict
 end
 
---- A condition function if there are any git changes
+-- a condition function if there are any git changes
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not there are any git changes
 function M.git_changed(bufnr)
@@ -52,7 +52,7 @@ function M.git_changed(bufnr)
   return git_status and (git_status.added or 0) + (git_status.removed or 0) + (git_status.changed or 0) > 0
 end
 
---- A condition function if the current buffer is modified
+-- a condition function if the current buffer is modified
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not the current buffer is modified
 function M.file_modified(bufnr)
@@ -60,7 +60,7 @@ function M.file_modified(bufnr)
   return vim.bo[bufnr or 0].modified
 end
 
---- A condition function if the current buffer is read only
+-- a condition function if the current buffer is read only
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not the current buffer is read only or not modifiable
 function M.file_read_only(bufnr)
@@ -69,7 +69,7 @@ function M.file_read_only(bufnr)
   return not buffer.modifiable or buffer.readonly
 end
 
---- A condition function if the current file has any diagnostics
+-- a condition function if the current file has any diagnostics
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not the current file has any diagnostics
 function M.has_diagnostics(bufnr)
@@ -77,7 +77,7 @@ function M.has_diagnostics(bufnr)
   return vim.g.diagnostics_mode > 0 and #vim.diagnostic.get(bufnr or 0) > 0
 end
 
---- A condition function if there is a defined filetype
+-- a condition function if there is a defined filetype
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not there is a filetype
 function M.has_filetype(bufnr)
@@ -85,12 +85,12 @@ function M.has_filetype(bufnr)
   return vim.bo[bufnr or 0].filetype and vim.bo[bufnr or 0].filetype ~= ""
 end
 
---- A condition function if Aerial is available
+-- a condition function if Aerial is available
 ---@return boolean # whether or not aerial plugin is installed
 -- function M.aerial_available() return is_available "aerial.nvim" end
 function M.aerial_available() return package.loaded["aerial"] end
 
---- A condition function if LSP is attached
+-- a condition function if LSP is attached
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not LSP is attached
 function M.lsp_attached(bufnr)
@@ -99,7 +99,7 @@ function M.lsp_attached(bufnr)
   return package.loaded["habit.utils.lsp"] and next(vim.lsp.get_active_clients { bufnr = bufnr or 0 }) ~= nil
 end
 
---- A condition function if treesitter is in use
+-- a condition function if treesitter is in use
 ---@param bufnr table|integer a buffer number to check the condition for, a table with bufnr property, or nil to get the current buffer
 ---@return boolean # whether or not treesitter is active
 function M.treesitter_available(bufnr)
@@ -109,15 +109,15 @@ function M.treesitter_available(bufnr)
   return parsers.has_parser(parsers.get_buf_lang(bufnr or vim.api.nvim_get_current_buf()))
 end
 
---- A condition function if the foldcolumn is enabled
+-- a condition function if the foldcolumn is enabled
 ---@return boolean # true if vim.opt.foldcolumn > 0, false if vim.opt.foldcolumn == 0
 function M.foldcolumn_enabled() return vim.opt.foldcolumn:get() ~= "0" end
 
---- A condition function if the number column is enabled
+-- a condition function if the number column is enabled
 ---@return boolean # true if vim.opt.number or vim.opt.relativenumber, false if neither
 function M.numbercolumn_enabled() return vim.opt.number:get() or vim.opt.relativenumber:get() end
 
---- A condition function if the signcolumn is enabled
+-- a condition function if the signcolumn is enabled
 ---@return boolean # false if vim.opt.signcolumn == "no", true otherwise
 function M.signcolumn_enabled() return vim.opt.signcolumn:get() ~= "no" end
 

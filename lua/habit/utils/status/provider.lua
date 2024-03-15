@@ -1,4 +1,4 @@
---- status providers
+-- status providers
 --
 -- statusline related provider functions for building statusline components
 --
@@ -15,11 +15,11 @@ local extend_tbl = utils.extend_tbl
 local get_icon = utils.get_icon
 local luv = vim.uv or vim.loop -- TODO remove when migrating > v0.9
 
---- a provider function for the fill string
+-- a provider function for the fill string
 ---@return string # the statusline string for filling the empty space
 function M.fill() return "%=" end
 
---- a provider function for numbercolumn string
+-- a provider function for numbercolumn string
 ---@param opts? table options passed to stylize function
 ---@return string # the statuscolumn string for adding signcolumn
 function M.signcolumn(opts)
@@ -27,9 +27,9 @@ function M.signcolumn(opts)
   return status_utils.stylize("%s", opts)
 end
 
---- a provider function for the signcolumn string
+-- a provider function for the signcolumn string
 ---@param opts? table the options passed to the stylize function
----@return string # the statuscolumn string for adding the signcolumn
+---@return function # the statuscolumn string for adding the signcolumn
 function M.numbercolumn(opts)
   opts = extend_tbl({ thousands = false, culright = true, escape = false }, opts)
   return function(self)
@@ -56,7 +56,7 @@ function M.numbercolumn(opts)
   end
 end
 
---- a provider function for building a foldcolumn
+-- a provider function for building a foldcolumn
 ---@param opts? table options passed to the stylize function
 ---@return function # a custom foldcolumn function for statuscolumn that doesn't show nest levels
 function M.foldcolumn(opts)
@@ -65,6 +65,7 @@ function M.foldcolumn(opts)
   local fillchars = vim.opt.fillchars:get()
   local foldopen = fillchars.foldopen or get_icon "FoldOpened"
   local foldclosed = fillchars.foldclose or get_icon "FoldClosed"
+  local foldsep = fillchars.foldsep or get_icon "FoldSeparator"
   return function()
     local wp = ffi.C.find_window_by_handle(0, ffi.new "Error") -- get window handler
     local width = ffi.C.compute_foldcolumn(wp, 0) -- get foldcolumn width
@@ -100,13 +101,13 @@ function M.foldcolumn(opts)
   end
 end
 
---- get current tab number
+-- get current tab number
 ---@return function # the statusline function to return a string for a tab number
 function M.tabnr()
   return function(self) return (self and self.tabnr) and "%" .. self.tabnr .. "T " .. self.tabnr .. " %T" or "" end
 end
 
---- show if spellcheck is on
+-- show if spellcheck is on
 ---@param opts? table options passed to stylize function
 ---@return function # the function for outputting if spell is enabled
 function M.spell(opts)
@@ -114,7 +115,7 @@ function M.spell(opts)
   return function() return status_utils.stylize(vim.wo.spell and opts.str or nil, opts) end
 end
 
---- show if paste is enabled
+-- show if paste is enabled
 ---@param opts? table options passed to stylize function
 ---@return function # the function for outputting if paste is enabled
 function M.paste(opts)
@@ -124,7 +125,7 @@ function M.paste(opts)
   return function() return status_utils.stylize(paste and opts.str or nil, opts) end
 end
 
---- display if macro is currently being recorded
+-- display if macro is currently being recorded
 ---@param opts? table a prefix before the recording register & opts passed to stylize function
 ---@return function # a function that returns current recording status
 function M.macro_recording(opts)
@@ -136,7 +137,7 @@ function M.macro_recording(opts)
   end
 end
 
---- show current command
+-- show current command
 ---@param opts? table opts passed to stylize function
 ---@return string # the statusline string for showing the current command
 function M.showcmd(opts)
@@ -144,7 +145,7 @@ function M.showcmd(opts)
   return status_utils.stylize(("%%%d.%d(%%S%%)"):format(opts.minwid, opts.maxwid), opts)
 end
 
---- show current search count
+-- show current search count
 ---@param opts? table opts for `vim.fn.searchcount` & opts passed to stylize function
 ---@return function # a function that returns a string of current search location
 function M.search_count(opts)
@@ -167,7 +168,7 @@ function M.search_count(opts)
   end
 end
 
---- show text of current vim mode
+-- show text of current vim mode
 ---@param opts? table options for padding text & opts passed to stylize function
 ---@return function # the function for displaying text of current vim mode
 function M.mode_text(opts)
@@ -188,7 +189,7 @@ function M.mode_text(opts)
   end
 end
 
---- show percentage of current location in documnent
+-- show percentage of current location in documnent
 ---@param opts? table options for top/bot text, fixed width, & options passed to stylize function
 ---@return function # the statusline string for displaying percentage of current document location
 function M.percentage(opts)
@@ -207,7 +208,7 @@ function M.percentage(opts)
   end
 end
 
---- show current line & character in document
+-- show current line & character in document
 ---@param opts? table opts for padding line & character locations & opts for stylizing
 ---@return function # statusline string for showing location in document line:char
 function M.ruler(opts)
@@ -220,7 +221,7 @@ function M.ruler(opts)
   end
 end
 
---- show close button icon
+-- show close button icon
 ---@param opts? table options passed to stylize function & kind of icon to use
 ---@return string # the stylized icon
 function M.close_button(opts)
@@ -228,7 +229,7 @@ function M.close_button(opts)
   return status_utils.stylize(get_icon(opts.kind), opts)
 end
 
---- show current filetype
+-- show current filetype
 ---@param opts? table opts passed to stylize function
 ---@return function # function for outputting filetype
 function M.filetype(opts)
@@ -238,7 +239,7 @@ function M.filetype(opts)
   end
 end
 
---- show filename
+-- show filename
 ---@param opts? table opts for argument to fnamemodify to format filename & opts passed to stylize function
 ---@return function # the function for outputting the filename
 function M.filename(opts)
@@ -254,7 +255,17 @@ function M.filename(opts)
   end
 end
 
---- show current file format
+-- show file encoding
+---@param opts? table opts passed to stylize function
+---@return function # the function for outputting the file encoding
+function M.file_encoding(opts)
+  return function(self)
+    local buf_enc = vim.bo[self and self.bufnr or 0].fenc
+    return status_utils.stylize(string.upper(buf_enc ~= "" and buf_enc or vim.o.enc), opts)
+  end
+end
+
+-- show current file format
 ---@param opts? table opts passed to stylize function
 ---@return function # function for outputting file format
 function M.file_format(opts)
@@ -264,7 +275,7 @@ function M.file_format(opts)
   end
 end
 
---- get unique filepath between all buffers
+-- get unique filepath between all buffers
 ---@param opts? table opts for function to get buffer name, buffer number, max length, & opts for stylize function
 ---@return function # path to file that uniquely identifies each buffer
 function M.unique_path(opts)
@@ -310,7 +321,7 @@ function M.unique_path(opts)
   end
 end
 
---- show if current file is modified
+-- show if current file is modified
 ---@param opts? table opts passed to stylize function
 ---@return function # the function for outputting the indicator if the file is modified
 function M.file_modified(opts)
@@ -320,7 +331,7 @@ function M.file_modified(opts)
   end
 end
 
---- show if current file is readonly
+-- show if current file is readonly
 ---@param opts? table opts passed to stylize function
 ---@return function # the function for outputting indicator if file is readonly
 function M.file_readonly(opts)
@@ -330,7 +341,7 @@ function M.file_readonly(opts)
   end
 end
 
---- show current filetype icon
+-- show current filetype icon
 ---@param opts? table opts passed to stylize function
 ---@return function # the function for outputting filetype icon
 function M.file_icon(opts)
@@ -346,14 +357,14 @@ function M.file_icon(opts)
   end
 end
 
---- show current git branch
+-- show current git branch
 ---@param opts table opts passed to stylize function
 ---@return function # the function for outputting git branch
 function M.git_branch(opts)
   return function(self) return status_utils.stylize(vim.b[self and self.bufnr or 0].gitsigns_head or "", opts) end
 end
 
---- show current git diff count of specific type
+-- show current git diff count of specific type
 ---@param opts? table opts for type of git diff & opts passed to stylize function
 ---@return function|nil # the function for outputting git diff
 function M.git_diff(opts)
@@ -367,7 +378,7 @@ function M.git_diff(opts)
   end
 end
 
---- show current diagnostic count of specific severity
+-- show current diagnostic count of specific severity
 ---@param opts table opts for severity of diagnostic & opts passed to stylize function
 ---@return function|nil # the function for outputting the diagnostic event
 function M.diagnostics(opts)
@@ -379,7 +390,7 @@ function M.diagnostics(opts)
   end
 end
 
---- show current progress of loading language servers
+-- show current progress of loading language servers
 ---@param opts? table opts passed to stylize function
 ---@return function # function for outputting lsp progress
 function M.lsp_progress(opts)
@@ -394,7 +405,7 @@ function M.lsp_progress(opts)
   end
 end
 
---- show connected lsp client names
+-- show connected lsp client names
 ---@param opts? table opts for expanding null_ls clients, max width percentage, & opts passed to stylize function
 ---@return function # function for outputting lsp client names
 function M.lsp_client_names(opts)
@@ -423,14 +434,14 @@ function M.lsp_client_names(opts)
   end
 end
 
---- show if treesitter connected
+-- show if treesitter connected
 ---@param opts? table opts passed to stylize function
 ---@return function # function for outputting TS if treesitter connected
 function M.treesitter_status(opts)
   return function() return status_utils.stylize(require("nvim-treesitter.parser").has_parser() and "TS" or "", opts) end
 end
 
---- display single string
+-- display single string
 ---@param opts? table opts passed to stylize function
 ---@return string # stylized statusline string
 function M.str(opts)

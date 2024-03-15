@@ -1,3 +1,8 @@
+-- status environment
+--
+-- statusline related environment vars shared between components/providers/&c.
+-- load with `local env = require "habit.utils.status.env"`
+
 local M = {}
 
 M.fallback_colors = {

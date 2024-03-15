@@ -1,4 +1,4 @@
---- status utilities
+-- status utilities
 --
 -- statusline related utility functions
 --
@@ -12,7 +12,7 @@ local utils = require "habit.utils"
 local extend_tbl = utils.extend_tbl
 local get_icon = utils.get_icon
 
---- Convert a component parameter table to a table that can be used with the component builder
+-- convert a component parameter table to a table that can be used with the component builder
 ---@param opts? table a table of provider options
 ---@param provider? function|string a provider in `M.providers`
 ---@return table|false # the provider table that can be used in `M.component.builder`
@@ -28,7 +28,7 @@ function M.build_provider(opts, provider, _)
     or false
 end
 
---- Convert key/value table of options to an array of providers for the component builder
+-- convert key/value table of options to an array of providers for the component builder
 ---@param opts table the table of options for the components
 ---@param providers string[] an ordered list like array of providers that are configured in the options table
 ---@param setup? function a function that takes provider options table, provider name, provider index and returns the setup provider table, optional, default is `M.build_provider`
@@ -41,14 +41,14 @@ function M.setup_providers(opts, providers, setup)
   return opts
 end
 
---- A utility function to get the width of the bar
+-- a utility function to get the width of the bar
 ---@param is_winbar? boolean true if you want the width of the winbar, false if you want the statusline width
 ---@return integer # the width of the specified bar
 function M.width(is_winbar)
   return vim.o.laststatus == 3 and not is_winbar and vim.o.columns or vim.api.nvim_win_get_width(0)
 end
 
---- Add left and/or right padding to a string
+-- add left and/or right padding to a string
 ---@param str string the string to add padding to
 ---@param padding table a table of the format `{ left = 0, right = 0}` that defines the number of spaces to include to the left and the right of the string
 ---@return string # the padded string
@@ -59,7 +59,7 @@ end
 
 local function escape(str) return str:gsub("%%", "%%%%") end
 
---- A utility function to stylize a string with an icon from lspkind, separators, and left/right padding
+-- a utility function to stylize a string with an icon from lspkind, separators, and left/right padding
 ---@param str? string the string to stylize
 ---@param opts? table options of `{ padding = { left = 0, right = 0 }, separator = { left = "|", right = "|" }, escape = true, show_empty = false, icon = { kind = "NONE", padding = { left = 0, right = 0 } } }`
 ---@return string # the stylized string
@@ -78,7 +78,7 @@ function M.stylize(str, opts)
     or ""
 end
 
---- Surround component with separator and color adjustment
+-- surround component with separator and color adjustment
 ---@param separator string|string[] the separator index to use in `env.separators`
 ---@param color function|string|table the color to use as the separator foreground/component background
 ---@param component table the component to surround
@@ -120,19 +120,19 @@ function M.surround(separator, color, component, condition)
   return surrounded
 end
 
---- Encode a position to a single value that can be decoded later
+-- encode a position to a single value that can be decoded later
 ---@param line integer line number of position
 ---@param col integer column number of position
 ---@param winnr integer a window number
 ---@return integer the encoded position
 function M.encode_pos(line, col, winnr) return bit.bor(bit.lshift(line, 16), bit.lshift(col, 6), winnr) end
 
---- Decode a previously encoded position to it's sub parts
+-- decode a previously encoded position to it's sub parts
 ---@param c integer the encoded position
 ---@return integer line, integer column, integer window
 function M.decode_pos(c) return bit.rshift(c, 16), bit.band(bit.rshift(c, 6), 1023), bit.band(c, 63) end
 
---- Get a list of registered null-ls providers for a given filetype
+-- get a list of registered null-ls providers for a given filetype
 ---@param filetype string the filetype to search null-ls for
 ---@return table # a table of null-ls sources
 function M.null_ls_providers(filetype)
@@ -153,7 +153,7 @@ function M.null_ls_providers(filetype)
   return registered
 end
 
---- Get the null-ls sources for a given null-ls method
+-- get the null-ls sources for a given null-ls method
 ---@param filetype string the filetype to search null-ls for
 ---@param method string the null-ls method (check null-ls documentation for available methods)
 ---@return string[] # the available sources for the given filetype and method

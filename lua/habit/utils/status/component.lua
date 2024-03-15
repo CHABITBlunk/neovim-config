@@ -1,4 +1,4 @@
---- status components
+-- status components
 --
 -- statusline related component functions to use with heirline
 --
@@ -7,24 +7,20 @@
 local M = {}
 
 local condition = require "habit.utils.status.condition"
-local env = require "habit.utils.status.env"
 local hl = require "habit.utils.status.hl"
 local init = require "habit.utils.status.init"
 local provider = require "habit.utils.status.provider"
 local status_utils = require "habit.utils.status.utils"
 
 local utils = require "habit.utils"
-local buffer_utils = require "habit.utils.buffer"
 local extend_tbl = utils.extend_tbl
-local get_icon = utils.get_icon
-local is_available = utils.is_available
 
---- a heirline component for filling in empty space of bar
+-- a heirline component for filling in empty space of bar
 ---@param opts? table options for configuring other fields of heirline component
 ---@return table # the heirline component table
 function M.fill(opts) return extend_tbl({ provider = provider.fill() }, opts) end
 
---- a function to build a set of children components for an entire file info section
+-- a function to build a set of children components for an entire file info section
 ---@param opts? table options for configuring other fields of heirline component
 ---@return table # the heirline component table
 function M.file_info(opts)
@@ -46,7 +42,7 @@ function M.file_info(opts)
   }))
 end
 
---- a function with different file_info default specifically for tabline
+-- a function with different file_info default specifically for tabline
 ---@param opts? table options for configuring file_icon, filename, filetype, file_modified, file_read_only, & overall padding
 ---@return table # the heirline component table
 function M.tabline_file_info(opts)
@@ -72,7 +68,7 @@ function M.tabline_file_info(opts)
   }, opts))
 end
 
---- a function to build a set of children components for an entire navigation section
+-- a function to build a set of children components for an entire navigation section
 ---@param opts? table options for configuring ruler, percentage, scrollbar, & overall padding
 ---@return table #the heirline component table
 function M.nav(opts)
@@ -87,7 +83,7 @@ function M.nav(opts)
   return M.builder(status_utils.setup_providers(opts, { "ruler", "percentage", "scrollbar" }))
 end
 
---- a function to build a set of children components for info shown in cmdline
+-- a function to build a set of children components for info shown in cmdline
 ---@param opts? table options for configuring macro recording, search count, & overall padding
 ---@return table # the heirline component table
 function M.cmd_info(opts)
@@ -123,7 +119,7 @@ function M.cmd_info(opts)
   return M.builder(status_utils.setup_providers(opts, { "macro_recording", "search_count", "showcmd" }))
 end
 
---- a function to build a set of children components for a mode section
+-- a function to build a set of children components for a mode section
 ---@param opts? table options for configuring mode_text, paste, spell, & overall padding
 ---@return table # heirline component table
 function M.mode(opts)
@@ -143,7 +139,7 @@ function M.mode(opts)
   return M.builder(status_utils.setup_providers(opts, { "mode_text", "str", "paste", "spell" }))
 end
 
---- a function to build a set of children components for an lsp breadcrumbs section
+-- a function to build a set of children components for an lsp breadcrumbs section
 ---@param opts? table options for configuring breadcrumbs & overall padding
 ---@return table # the heirline component table
 function M.breadcrumbs(opts)
@@ -152,7 +148,7 @@ function M.breadcrumbs(opts)
   return opts
 end
 
---- a function to build a set of children components for the current file path
+-- a function to build a set of children components for the current file path
 ---@param opts? table options for configuring breadcrumbs & overall padding
 ---@return table # the heirline component table
 function M.separated_path(opts)
@@ -161,7 +157,7 @@ function M.separated_path(opts)
   return opts
 end
 
---- a function to build a set of children components for a git branch section
+-- a function to build a set of children components for a git branch section
 ---@param opts? table options for configuring git branch & overall padding
 ---@return table # heirline component table
 function M.git_branch(opts)
@@ -175,7 +171,7 @@ function M.git_branch(opts)
   return M.builder(status_utils.setup_providers(opts, { "git_branch" }))
 end
 
---- a function to build a set of children components for a git difference section
+-- a function to build a set of children components for a git difference section
 ---@param opts? table options for configuring git changes & overall padding
 ---@return table # the heirline component table
 function M.git_diff(opts)
@@ -199,7 +195,7 @@ function M.git_diff(opts)
   end))
 end
 
---- a function to build a set of children components for a diagnostics section
+-- a function to build a set of children components for a diagnostics section
 ---@param opts? table opts for configuring diagnostic providers & overall padding
 ---@return table # the heirline component table
 function M.diagnostics(opts)
@@ -223,7 +219,7 @@ function M.diagnostics(opts)
   end))
 end
 
---- a function to build a set of children components for a treesitter section
+-- a function to build a set of children components for a treesitter section
 ---@param opts? table options for configuring diagnostic providers & overall padding
 ---@return table # the heirline component table
 function M.treesitter(opts)
@@ -241,7 +237,7 @@ function M.treesitter(opts)
   return M.builder(status_utils.setup_providers(opts, { "str" }))
 end
 
---- a function to build a set of children components for an lsp section
+-- a function to build a set of children components for an lsp section
 ---@param opts? table options for configuring lsp progress & client_name providers & overall padding
 ---@return table # the heirline component table
 function M.lsp(opts)
@@ -283,7 +279,7 @@ function M.lsp(opts)
   ))
 end
 
---- a function to build a set of components for a foldcolumn section in a statuscolumn
+-- a function to build a set of components for a foldcolumn section in a statuscolumn
 ---@param opts? table options for configuring foldcolumn & overall padding
 ---@return table # the heirline component table
 function M.foldcolumn(opts)
@@ -294,7 +290,7 @@ function M.foldcolumn(opts)
   return M.builder(status_utils.setup_providers(opts, { "foldcolumn" }))
 end
 
---- a function to build a set of components for a numbercolumn section in statuscolumn
+-- a function to build a set of components for a numbercolumn section in statuscolumn
 ---@param opts? table options for configuring signcolumn & overall padding
 ---@return table # the heirline component table
 function M.numbercolumn(opts)
@@ -305,7 +301,7 @@ function M.numbercolumn(opts)
   return M.builder(status_utils.setup_providers(opts, { "numbercolumn" }))
 end
 
---- a function to build a set of components for a signcolumn section in statuscolumn
+-- a function to build a set of components for a signcolumn section in statuscolumn
 ---@param opts? table opts for configuring signcolumn & overall padding
 ---@return table # the heirline component table
 function M.signcolumn(opts)
@@ -316,7 +312,7 @@ function M.signcolumn(opts)
   return M.builder(status_utils.setup_providers(opts, { "signcolumn" }))
 end
 
---- a general function to build a section of status providers with highlights, conditions, & section surrounding
+-- a general function to build a section of status providers with highlights, conditions, & section surrounding
 ---@param opts? table a list of components to build into a section
 ---@return table # the heirline component table
 function M.builder(opts)
